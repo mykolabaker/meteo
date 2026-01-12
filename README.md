@@ -1,0 +1,152 @@
+# Meteo Proxy API
+
+A production-ready REST API proxy for Open-Meteo weather data.
+
+## Features
+
+- Current weather data (temperature, wind speed) by coordinates
+- Response caching (60s TTL by default)
+- Configurable upstream timeout
+- Prometheus metrics
+- Health checks (liveness/readiness probes)
+- Structured JSON logging
+- Kubernetes-ready with HPA and PDB
+
+## Quick Start
+
+### Local Development
+
+```bash
+# Install dependencies
+pip install -e ".[dev]"
+
+# Run the server
+python -m meteo_proxy.main
+
+# Or with uvicorn for auto-reload
+uvicorn meteo_proxy.main:app --reload --port 8080
+```
+
+### Docker
+
+```bash
+# Build and run with docker-compose
+docker-compose up --build
+
+# Or build manually
+docker build -t meteo-proxy .
+docker run -p 8080:8080 meteo-proxy
+```
+
+### Kubernetes
+
+```bash
+# Apply all manifests
+kubectl apply -f k8s/
+
+# Or individually
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+kubectl apply -f k8s/pdb.yaml
+```
+
+## API Usage
+
+### Get Current Weather
+
+```bash
+curl "http://localhost:8080/api/v1/weather?lat=52.52&lon=13.41"
+```
+
+Response:
+```json
+{
+  "location": {"lat": 52.52, "lon": 13.41},
+  "current": {
+    "temperatureC": 15.5,
+    "windSpeedKmh": 12.3
+  },
+  "source": "open-meteo",
+  "retrievedAt": "2026-01-11T10:12:54Z"
+}
+```
+
+### Health Checks
+
+```bash
+# Liveness probe
+curl http://localhost:8080/health/live
+
+# Readiness probe
+curl http://localhost:8080/health/ready
+```
+
+### Metrics
+
+```bash
+curl http://localhost:8080/metrics
+```
+
+### API Documentation
+
+- Swagger UI: http://localhost:8080/docs
+- ReDoc: http://localhost:8080/redoc
+
+## Configuration
+
+All settings are configurable via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APP_HOST` | 0.0.0.0 | Server bind host |
+| `APP_PORT` | 8080 | Server bind port |
+| `UPSTREAM_URL` | https://api.open-meteo.com/v1/forecast | Open-Meteo API URL |
+| `UPSTREAM_TIMEOUT_SECONDS` | 1.0 | Upstream request timeout |
+| `CACHE_TTL_SECONDS` | 60 | Cache TTL in seconds |
+| `CACHE_MAX_SIZE` | 10000 | Maximum cache entries |
+| `LOG_LEVEL` | INFO | Logging level |
+| `LOG_FORMAT` | json | Log format (json/text) |
+
+## Testing
+
+```bash
+# Run all tests with coverage
+pytest
+
+# Run specific test file
+pytest tests/test_api.py
+
+# Run with verbose output
+pytest -v
+```
+
+## Project Structure
+
+```
+meteo-proxy/
+├── src/meteo_proxy/
+│   ├── api/           # API routes and schemas
+│   ├── services/      # Business logic
+│   ├── middleware/    # Request logging
+│   ├── config.py      # Configuration
+│   └── main.py        # Application entry
+├── tests/             # Test suite
+├── k8s/               # Kubernetes manifests
+├── Dockerfile
+├── docker-compose.yaml
+└── pyproject.toml
+```
+
+## Metrics
+
+The following Prometheus metrics are exposed:
+
+- `http_requests_total` - Total HTTP requests (labels: method, path, status)
+- `http_request_duration_seconds` - HTTP request duration histogram
+- `upstream_requests_total` - Upstream API calls (labels: status)
+- `upstream_request_duration_seconds` - Upstream request duration
+- `cache_hits_total` - Cache hit count
+- `cache_misses_total` - Cache miss count
+- `cache_size` - Current cache entries

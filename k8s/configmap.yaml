@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meteo-proxy-config
+  labels:
+    app: meteo-proxy
+data:
+  APP_HOST: "0.0.0.0"
+  APP_PORT: "8080"
+  UPSTREAM_URL: "https://api.open-meteo.com/v1/forecast"
+  UPSTREAM_TIMEOUT_SECONDS: "1.0"
+  CACHE_TTL_SECONDS: "60"
+  CACHE_MAX_SIZE: "10000"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"

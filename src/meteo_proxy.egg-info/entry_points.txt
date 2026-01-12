@@ -1,0 +1,2 @@
+[console_scripts]
+meteo-proxy = meteo_proxy.main:run

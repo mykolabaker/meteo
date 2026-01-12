@@ -1,0 +1,31 @@
+services:
+  meteo-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8080
+      - UPSTREAM_URL=https://api.open-meteo.com/v1/forecast
+      - UPSTREAM_TIMEOUT_SECONDS=1.0
+      - CACHE_TTL_SECONDS=60
+      - CACHE_MAX_SIZE=10000
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health/live')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.2"
+        reservations:
+          memory: 64M
+          cpus: "0.05"
+    restart: unless-stopped

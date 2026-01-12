@@ -1,0 +1,35 @@
+name: Build and Push
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: registry.digitalocean.com
+  IMAGE_NAME: meteo-registry/meteo-proxy
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Login to DO Container Registry
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_NAME:${{ github.sha }} .
+          docker build -t $REGISTRY/$IMAGE_NAME:latest .
+          docker push $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          docker push $REGISTRY/$IMAGE_NAME:latest
+
+      - name: Deploy to Kubernetes
+        run: |
+          doctl kubernetes cluster kubeconfig save meteo-cluster
+          kubectl set image deployment/meteo-proxy meteo-proxy=$REGISTRY/$IMAGE_NAME:${{ github.sha }}
