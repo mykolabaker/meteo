@@ -32,4 +32,6 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           doctl kubernetes cluster kubeconfig save meteo-cluster
+          kubectl apply -f k8s/
           kubectl set image deployment/meteo-proxy meteo-proxy=$REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          kubectl rollout status deployment/meteo-proxy --timeout=120s
