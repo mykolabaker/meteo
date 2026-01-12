@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from prometheus_client import make_asgi_app
 
 from meteo_proxy import __version__
-from meteo_proxy.api.routes import api_router, health_router
+from meteo_proxy.api.routes import api_router, health_router, root_router
 from meteo_proxy.config import get_settings
 from meteo_proxy.middleware.logging import LoggingMiddleware, configure_logging
 
@@ -30,6 +30,7 @@ def create_app() -> FastAPI:
     app.add_middleware(LoggingMiddleware)
 
     # Include routers
+    app.include_router(root_router)
     app.include_router(api_router)
     app.include_router(health_router)
 

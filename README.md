@@ -2,6 +2,8 @@
 
 A production-ready REST API proxy for Open-Meteo weather data.
 
+**Live API:** https://meteo.mykola.tech
+
 ## Features
 
 - Current weather data (temperature, wind speed) by coordinates

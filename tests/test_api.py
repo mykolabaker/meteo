@@ -151,6 +151,18 @@ class TestMetricsEndpoint:
         assert "http_requests_total" in content or "python_info" in content
 
 
+class TestLandingPage:
+    """Tests for landing page."""
+
+    def test_landing_page(self, client: TestClient) -> None:
+        """Test landing page returns HTML."""
+        response = client.get("/")
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
+        assert "Meteo Proxy API" in response.text
+        assert "github.com/mykolabaker/meteo" in response.text
+
+
 class TestOpenAPIEndpoints:
     """Tests for OpenAPI documentation endpoints."""
 
